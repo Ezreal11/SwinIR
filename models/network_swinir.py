@@ -10,7 +10,7 @@ import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 
-
+#多层感知机
 class Mlp(nn.Module):
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
         super().__init__()
@@ -29,7 +29,7 @@ class Mlp(nn.Module):
         x = self.drop(x)
         return x
 
-
+#Swin transformer函数
 def window_partition(x, window_size):
     """
     Args:
@@ -44,7 +44,7 @@ def window_partition(x, window_size):
     windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size, window_size, C)
     return windows
 
-
+#Swin transformer函数
 def window_reverse(windows, window_size, H, W):
     """
     Args:
@@ -61,7 +61,7 @@ def window_reverse(windows, window_size, H, W):
     x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
     return x
 
-
+#Swin transformer函数
 class WindowAttention(nn.Module):
     r""" Window based multi-head self attention (W-MSA) module with relative position bias.
     It supports both of shifted and non-shifted window.
@@ -160,7 +160,7 @@ class WindowAttention(nn.Module):
         flops += N * self.dim * self.dim
         return flops
 
-
+#Swin transformer块
 class SwinTransformerBlock(nn.Module):
     r""" Swin Transformer Block.
 
@@ -296,7 +296,7 @@ class SwinTransformerBlock(nn.Module):
         flops += self.dim * H * W
         return flops
 
-
+#Swin transformer函数
 class PatchMerging(nn.Module):
     r""" Patch Merging Layer.
 
@@ -345,7 +345,7 @@ class PatchMerging(nn.Module):
         flops += (H // 2) * (W // 2) * 4 * self.dim * 2 * self.dim
         return flops
 
-
+# A basic Swin Transformer layer for one stage          STL???
 class BasicLayer(nn.Module):
     """ A basic Swin Transformer layer for one stage.
 
@@ -415,7 +415,7 @@ class BasicLayer(nn.Module):
             flops += self.downsample.flops()
         return flops
 
-
+#RSTB: 多层BasicLayer加卷积加残差
 class RSTB(nn.Module):
     """Residual Swin Transformer Block (RSTB).
 
@@ -666,11 +666,11 @@ class SwinIR(nn.Module):
 
         #####################################################################################################
         ################################### 1, shallow feature extraction ###################################
-        self.conv_first = nn.Conv2d(num_in_ch, embed_dim, 3, 1, 1)
+        self.conv_first = nn.Conv2d(num_in_ch, embed_dim, 3, 1, 1)          #浅特征提取仅为一层卷积
 
         #####################################################################################################
         ################################### 2, deep feature extraction ######################################
-        self.num_layers = len(depths)
+        self.num_layers = len(depths)                                       #深特征提取是数层RSTB+卷积+残差
         self.embed_dim = embed_dim
         self.ape = ape
         self.patch_norm = patch_norm
@@ -700,7 +700,7 @@ class SwinIR(nn.Module):
         # stochastic depth
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]  # stochastic depth decay rule
 
-        # build Residual Swin Transformer blocks (RSTB)
+        # build Residual Swin Transformer blocks (RSTB)   RSTB序列
         self.layers = nn.ModuleList()
         for i_layer in range(self.num_layers):
             layer = RSTB(dim=embed_dim,
@@ -811,10 +811,10 @@ class SwinIR(nn.Module):
 
         if self.upsampler == 'pixelshuffle':
             # for classical SR
-            x = self.conv_first(x)
-            x = self.conv_after_body(self.forward_features(x)) + x
-            x = self.conv_before_upsample(x)
-            x = self.conv_last(self.upsample(x))
+            x = self.conv_first(x)          #浅特征提取
+            x = self.conv_after_body(self.forward_features(x)) + x  #深特征提取 RSTB序列+卷积+残差
+            x = self.conv_before_upsample(x)        #卷积+LeakyRelu
+            x = self.conv_last(self.upsample(x))    #upsample后卷积
         elif self.upsampler == 'pixelshuffledirect':
             # for lightweight SR
             x = self.conv_first(x)
