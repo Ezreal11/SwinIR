@@ -568,7 +568,7 @@ class PatchUnEmbed(nn.Module):
         flops = 0
         return flops
 
-
+#上采样 补全缺失像素
 class Upsample(nn.Sequential):
     """Upsample module.
 
@@ -590,7 +590,7 @@ class Upsample(nn.Sequential):
             raise ValueError(f'scale {scale} is not supported. ' 'Supported scales: 2^n and 3.')
         super(Upsample, self).__init__(*m)
 
-
+#轻量化upsample
 class UpsampleOneStep(nn.Sequential):
     """UpsampleOneStep module (the difference with Upsample is that it always only has 1conv + 1pixelshuffle)
        Used in lightweight SR to save parameters.
