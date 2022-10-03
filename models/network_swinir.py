@@ -814,7 +814,7 @@ class SwinIR(nn.Module):
             x = self.conv_first(x)          #浅特征提取
             x = self.conv_after_body(self.forward_features(x)) + x  #深特征提取 RSTB序列+卷积+残差
             x = self.conv_before_upsample(x)        #卷积+LeakyRelu
-            x = self.conv_last(self.upsample(x))    #upsample后卷积
+            x = self.conv_last(self.upsample(x))    #upsample后卷积  
         elif self.upsampler == 'pixelshuffledirect':
             # for lightweight SR
             x = self.conv_first(x)
@@ -865,3 +865,6 @@ if __name__ == '__main__':
     x = torch.randn((1, 3, height, width))
     x = model(x)
     print(x.shape)
+
+
+#test git
